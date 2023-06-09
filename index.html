@@ -116,8 +116,15 @@
       };
 
       employees.push(employee);
+      sortEmployees();
       renderEmployees();
       saveEmployees();
+    }
+
+    function sortEmployees() {
+      employees.sort(function(a, b) {
+        return a.salary - b.salary;
+      });
     }
 
     document.getElementById('employee-form').addEventListener('submit', function(e) {
@@ -194,3 +201,4 @@
   </script>
 </body>
 </html>
+
