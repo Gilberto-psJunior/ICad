@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Cadastro de Funcionários</title>
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css">
+  <style>
+    body {
+      background-image: url('obras.jpg');
+      background-size: cover;
+    }
+
+    .highlight {
+      color: red;
+      font-weight: bold;
+    }
+
+    .container {
+      margin-top: 50px;
+    }
+
+    .form-control {
+      margin-bottom: 10px;
+    }
+
+    #employees-table {
+      margin-top: 20px;
+    }
+
+    #total-salary {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>Cadastro de Funcionários</h1>
+
+    <form id="employee-form">
+      <div class="form-group">
+        <label for="name">Nome:</label>
+        <input type="text" class="form-control" id="name" required>
+      </div>
+      <div class="form-group">
+        <label for="salary">Salário:</label>
+        <input type="number" class="form-control" id="salary" required>
+      </div>
+      <button type="submit" class="btn btn-primary">Cadastrar</button>
+    </form>
+
+    <table id="employees-table" class="table table-striped">
+      <thead>
+        <tr>
+          <th>Nome</th>
+          <th>Salário</th>
+          <th>Ações</th>
+        </tr>
+      </thead>
+      <tbody id="employees-body">
+      </tbody>
+    </table>
+
+    <div id="total-salary">Total dos Salários: R$<span id="total-amount">0.00</span></div>
+  </div>
+
+  <script>
+    var employees = [];
+
+    // Carrega os dados do localStorage
+    function loadEmployees() {
+      var data = localStorage.getItem('employees');
+      if (data) {
+        employees = JSON.parse(data);
+        renderEmployees();
+      }
+    }
+
+    // Salva os dados no localStorage
+    function saveEmployees() {
+      localStorage.setItem('employees', JSON.stringify(employees));
+    }
+
+    function renderEmployees() {
+      var employeesBody = document.getElementById('employees-body');
+      employeesBody.innerHTML = '';
+
+      for (var i = 0; i < employees.length; i++) {
+        var employee = employees[i];
+
+        var newRow = document.createElement('tr');
+        var nameCell = document.createElement('td');
+        var salaryCell = document.createElement('td');
+        var actionsCell = document.createElement('td');
+
+        nameCell.innerText = employee.name;
+        salaryCell.innerText = employee.salary.toFixed(2);
+        actionsCell.innerHTML = '<button class="btn btn-link btn-sm edit-btn">Editar</button>';
+
+        newRow.appendChild(nameCell);
+        newRow.appendChild(salaryCell);
+        newRow.appendChild(actionsCell);
+
+        employeesBody.appendChild(newRow);
+      }
+
+      updateHighlight();
+      updateTotalSalary();
+    }
+
+    function addEmployee(name, salary) {
+      var employee = {
+        name: name,
+        salary: salary
+      };
+
+      employees.push(employee);
+      renderEmployees();
+      saveEmployees();
+    }
+
+    document.getElementById('employee-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+
+      var nameInput = document.getElementById('name');
+      var salaryInput = document.getElementById('salary');
+
+      var name = nameInput.value;
+      var salary = parseFloat(salaryInput.value);
+
+      if (name && salary) {
+        addEmployee(name, salary);
+
+        nameInput.value = '';
+        salaryInput.value = '';
+      }
+    });
+
+    function updateHighlight() {
+      var salaryCells = document.querySelectorAll('#employees-body td:nth-child(2)');
+
+      for (var i = 0; i < salaryCells.length; i++) {
+        var salaryCell = salaryCells[i];
+        var salary = parseFloat(salaryCell.innerText);
+
+        if (salary > 5000) {
+          salaryCell.classList.add('highlight');
+        } else {
+          salaryCell.classList.remove('highlight');
+        }
+      }
+    }
+
+    function updateTotalSalary() {
+      var salaryCells = document.querySelectorAll('#employees-body td:nth-child(2)');
+      var total = 0;
+
+      for (var i = 0; i < salaryCells.length; i++) {
+        var salary = parseFloat(salaryCells[i].innerText);
+        total += salary;
+      }
+
+      document.getElementById('total-amount').innerText = total.toFixed(2);
+    }
+
+    document.getElementById('employees-body').addEventListener('click', function(e) {
+      if (e.target.classList.contains('edit-btn')) {
+        var row = e.target.parentNode.parentNode;
+        var nameCell = row.querySelector('td:nth-child(1)');
+        var salaryCell = row.querySelector('td:nth-child(2)');
+
+        var name = nameCell.innerText;
+        var salary = salaryCell.innerText;
+
+        var newName = prompt('Editar nome:', name);
+        var newSalary = parseFloat(prompt('Editar salário:', salary));
+
+        if (newName && newSalary) {
+          nameCell.innerText = newName;
+          salaryCell.innerText = newSalary.toFixed(2);
+
+          updateHighlight();
+          updateTotalSalary();
+          saveEmployees();
+        }
+      }
+    });
+
+    // Carrega os dados ao carregar a página
+    window.addEventListener('load', function() {
+      loadEmployees();
+    });
+  </script>
+</body>
+</html>
